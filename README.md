@@ -1,8 +1,13 @@
 # Assignment 1: Stateful widgets
 
+
 For this assignment, I created a **simple expense tracker** app inspired from a step-by-step tutorial by Dhaval patil on Medium (https://medium.com/@d22it209/budget-planner-app-in-flutter-959e002b458d)
 
 ## Features
+<p align="center">
+   <img src=assets/HomePage.png width=200 title="Home page">
+   <img src=assets/Input.png width=200 title="Input modal">
+</p>
 
 There are several features and details that I created on this project:
 1. There are more than 5 widgets that I use: 

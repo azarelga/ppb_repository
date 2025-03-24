@@ -23,3 +23,5 @@ There are several features and details that I created on this project:
 3. Net worth total shown at the top of the app, 
 4. Rupiah Currency Conversion
 5. Several UI adjustments (Create/Update operations through BottomSheet modal, etc.).
+
+[Video Demo App](https://youtu.be/AMdG--Xl610)

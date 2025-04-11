@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'dart:developer' as developer;
 import 'package:intl/intl.dart';
 import 'package:ppb_repository/model/transaction.model.dart';
 import 'package:ppb_repository/widgets/transaction_form.dart';
@@ -86,7 +85,6 @@ class _HomePageState extends State<HomePage> {
         date: DateTime.now(),
         type: _selectedType,
       );
-      developer.log(newTransaction.toString());
       await AppDatabase.instance.insertTransaction(newTransaction);
     } else {
       // Update existing transaction
@@ -111,7 +109,6 @@ class _HomePageState extends State<HomePage> {
 
   Future<void> _refreshTransactions() async {
     final allTransactions = await AppDatabase.instance.getAllTransactions();
-    developer.log(allTransactions.toString());
     setState(() {
       _transactions.clear();
       _transactions.addAll(allTransactions);

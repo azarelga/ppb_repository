@@ -250,7 +250,7 @@ Dengan utilities database yang telah kita buat dan model yang sudah kita ubah, k
 
 ### Rombak Method `homepage.dart`
 
-1. _submitTransaction(): Method `SetState()` dapat kita ubah menjadi method database untuk menyimpan data ke dalam database, yakni `insertTransaction`. Apabila operasi yang dilakukan adalah update, kita dapat menggunakan method `updateTransaction`. Setelah operasi Create atau Update telah dilakukan, kita dapat me-refresh list transaksi dari database menggunakan method `_refreshTransactions()`
+1. `_submitTransaction()`: Method `SetState()` dapat kita ubah menjadi method database untuk menyimpan data ke dalam database, yakni `insertTransaction`. Apabila operasi yang dilakukan adalah update, kita dapat menggunakan method `updateTransaction`. Setelah operasi Create atau Update telah dilakukan, kita dapat me-refresh list transaksi dari database menggunakan method `_refreshTransactions()`
 
 ```dart
   Future<void> _submitTransaction() async {
@@ -288,7 +288,7 @@ Dengan utilities database yang telah kita buat dan model yang sudah kita ubah, k
 
 ```
 
-2. _refreshTransactions(): Method ini digunakan untuk mengambil data dari database dan menyimpannya ke dalam list transaksi yang ada pada aplikasi. Kita dapat menggunakan method `getAllTransactions()` yang telah kita buat sebelumnya.
+2. `_refreshTransactions()`: Method ini digunakan untuk mengambil data dari database dan menyimpannya ke dalam list transaksi yang ada pada aplikasi. Kita dapat menggunakan method `getAllTransactions()` yang telah kita buat sebelumnya.
 
 ```dart
   Future<void> _refreshTransactions() async {
@@ -300,7 +300,7 @@ Dengan utilities database yang telah kita buat dan model yang sudah kita ubah, k
   }
 ```
 
-3. _deleteTransaction(): Method ini digunakan untuk menghapus transaksi dari database. Kita dapat menggunakan method database `deleteTransaction()` yang telah kita buat sebelumnya.
+3. `_deleteTransaction():` Method ini digunakan untuk menghapus transaksi dari database. Kita dapat menggunakan method database `deleteTransaction()` yang telah kita buat sebelumnya.
 
 ```dart
   Future<void> _deleteTransaction(int id) async {
@@ -308,6 +308,8 @@ Dengan utilities database yang telah kita buat dan model yang sudah kita ubah, k
     _refreshTransactions();
   }
 ```
+
+### Cherry on Top pada `main.dart`
 
 Yang terakhir, pada `main.dart` , kita dapat menginisialisasi database dengan memanggil `AppDatabase.instance.database` pada `main()`.
 

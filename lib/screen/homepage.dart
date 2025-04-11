@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'dart:developer' as developer;
 import 'package:intl/intl.dart';
 import 'package:ppb_repository/model/transaction.model.dart';
 import 'package:ppb_repository/widgets/transaction_form.dart';
 import 'package:ppb_repository/widgets/transaction_item.dart';
+import 'package:ppb_repository/utils/database.dart';
 
 class HomePage extends StatefulWidget {
   @override
@@ -68,7 +70,7 @@ class _HomePageState extends State<HomePage> {
   }
 
   // Create transaction and update _transaction list
-  void _submitTransaction() {
+  Future<void> _submitTransaction() async {
     final enteredTitle = _titleController.text;
     final enteredAmount = double.tryParse(_amountController.text) ?? 0.0;
 
@@ -78,32 +80,41 @@ class _HomePageState extends State<HomePage> {
 
     if (_editingTransaction == null) {
       // Create new transaction
-      setState(() {
-        _transactions.add(
-          Transaction(
-            id: DateTime.now().toString(),
-            title: enteredTitle,
-            amount: enteredAmount,
-            date: DateTime.now(),
-            type: _selectedType,
-          ),
-        );
-      });
+      final newTransaction = Transaction(
+        title: enteredTitle,
+        amount: enteredAmount,
+        date: DateTime.now(),
+        type: _selectedType,
+      );
+      developer.log(newTransaction.toString());
+      await AppDatabase.instance.insertTransaction(newTransaction);
     } else {
       // Update existing transaction
-      setState(() {
-        _editingTransaction!.title = enteredTitle;
-        _editingTransaction!.amount = enteredAmount;
-        _editingTransaction!.type = _selectedType;
-      });
+      final updatedTx = _editingTransaction!.copyWith(
+        title: enteredTitle,
+        amount: enteredAmount,
+        type: _selectedType,
+      );
+      await AppDatabase.instance.updateTransaction(updatedTx);
     }
+
+    // Refresh the list from database
+    _refreshTransactions();
 
     Navigator.of(context).pop();
   }
 
-  void _deleteTransaction(String id) {
+  Future<void> _deleteTransaction(int id) async {
+    AppDatabase.instance.deleteTransaction(id);
+    _refreshTransactions();
+  }
+
+  Future<void> _refreshTransactions() async {
+    final allTransactions = await AppDatabase.instance.getAllTransactions();
+    developer.log(allTransactions.toString());
     setState(() {
-      _transactions.removeWhere((tx) => tx.id == id);
+      _transactions.clear();
+      _transactions.addAll(allTransactions);
     });
   }
 
@@ -116,6 +127,7 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
+    _refreshTransactions();
     final currencyFormat = NumberFormat.currency(
       locale: 'id',
       symbol: 'Rp',
@@ -123,9 +135,7 @@ class _HomePageState extends State<HomePage> {
     );
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text('Azarel\'s Expense Tracker App'),
-      ),
+      appBar: AppBar(title: Text('Azarel\'s Expense Tracker App')),
       body: Column(
         // Net Worth
         children: [
@@ -139,10 +149,7 @@ class _HomePageState extends State<HomePage> {
                 children: [
                   Text(
                     'Jumlah saldo kamu segini:',
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.w500,
-                    ),
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.w500),
                   ),
                   SizedBox(height: 8),
                   Text(
@@ -161,15 +168,12 @@ class _HomePageState extends State<HomePage> {
 
           // Transaction List header
           Padding(
-            padding: EdgeInsets.symmetric(horizontal: 16, vertical:16),
+            padding: EdgeInsets.symmetric(horizontal: 16, vertical: 16),
             child: Row(
               children: [
                 Text(
                   'List Transaksi',
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                 ),
               ],
             ),
@@ -177,36 +181,40 @@ class _HomePageState extends State<HomePage> {
 
           // Transaction List
           Expanded(
-            child: _transactions.isEmpty // If empty,
-                ? Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(
-                    Icons.account_balance_wallet_outlined,
-                    size: 60,
-                    color: Colors.grey,
-                  ),
-                  SizedBox(height: 16),
-                  Text(
-                    'Diisi yuk transaksinya!',
-                    style: TextStyle(fontSize: 16, color: Colors.grey),
-                  ),
-                ],
-              ),
-            )
-                : ListView.builder( // If its not empty,
-              itemCount: _transactions.length,
-              itemBuilder: (ctx, index) {
-                final tx = _transactions[index];
-                return TransactionItem(
-                  transaction: tx,
-                  currencyFormat: currencyFormat,
-                  onDelete: () => _deleteTransaction(tx.id),
-                  onEdit: () => _showAddTransactionSheet(transaction: tx),
-                );
-              },
-            ),
+            child:
+                _transactions
+                        .isEmpty // If empty,
+                    ? Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.account_balance_wallet_outlined,
+                            size: 60,
+                            color: Colors.grey,
+                          ),
+                          SizedBox(height: 16),
+                          Text(
+                            'Diisi yuk transaksinya!',
+                            style: TextStyle(fontSize: 16, color: Colors.grey),
+                          ),
+                        ],
+                      ),
+                    )
+                    : ListView.builder(
+                      // If its not empty,
+                      itemCount: _transactions.length,
+                      itemBuilder: (ctx, index) {
+                        final tx = _transactions[index];
+                        return TransactionItem(
+                          transaction: tx,
+                          currencyFormat: currencyFormat,
+                          onDelete: () => _deleteTransaction(tx.id!),
+                          onEdit:
+                              () => _showAddTransactionSheet(transaction: tx),
+                        );
+                      },
+                    ),
           ),
         ],
       ),

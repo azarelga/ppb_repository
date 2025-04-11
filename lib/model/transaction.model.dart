@@ -1,4 +1,4 @@
-const String tableName = 'transaction';
+const String tableName = 'transaction_table';
 
 const String idField = '_id';
 const String titleField = 'title';
@@ -21,14 +21,14 @@ const String doubleType = "DOUBLE NOT NULL";
 const String integerType = "INTEGER NOT NULL";
 
 class Transaction {
-  final String id;
+  final int? id;
   String title;
   double amount;
   DateTime date;
   TransactionType type;
 
   Transaction({
-    required this.id,
+    this.id,
     required this.title,
     required this.amount,
     required this.date,
@@ -37,7 +37,7 @@ class Transaction {
 
   static Transaction fromJson(Map<String, dynamic> json) {
     return Transaction(
-      id: json[idField],
+      id: json[idField] as int?,
       title: json[titleField],
       amount: json[amountField],
       date: DateTime.parse(json[dateField]),
@@ -46,8 +46,8 @@ class Transaction {
       ),
     );
   }
-  
-  Map<String, dynamic> toJson() {
+
+  Map<String, dynamic> toMap() {
     return {
       idField: id,
       titleField: title,
@@ -58,7 +58,7 @@ class Transaction {
   }
 
   Transaction copyWith({
-    String? id,
+    int? id,
     String? title,
     double? amount,
     DateTime? date,
@@ -73,8 +73,5 @@ class Transaction {
     );
   }
 }
-
-
-
 
 enum TransactionType { income, expense }

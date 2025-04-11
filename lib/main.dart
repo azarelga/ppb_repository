@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:ppb_repository/screen/homepage.dart';
+import 'package:ppb_repository/utils/database.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await AppDatabase.instance.database; // ensures DB is ready
   runApp(MyApp());
 }
 

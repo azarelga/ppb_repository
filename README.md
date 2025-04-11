@@ -1,6 +1,7 @@
 # Assignment 2: Persistent Data with SQFLite
 
----
+https://github.com/user-attachments/assets/b8c4cf2b-1037-4355-98e0-dae952d0c6c2
+
 <!--toc:start-->
 - [Assignment 2: Persistent Data with SQFLite](#assignment-2-persistent-data-with-sqflite)
   - [Step 1: Instalasi Dependencies](#step-1-instalasi-dependencies)

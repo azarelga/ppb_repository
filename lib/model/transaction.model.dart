@@ -1,4 +1,4 @@
-const String tableName = 'transaction_table';
+const String tableName = 'transactions';
 
 const String idField = '_id';
 const String titleField = 'title';
@@ -14,14 +14,8 @@ const List<String> transactionFields = [
   typeField,
 ];
 
-const String boolType = "BOOLEAN NOT NULL";
-const String idType = "INTEGER PRIMARY KEY AUTOINCREMENT";
-const String textType = "TEXT NOT NULL";
-const String doubleType = "DOUBLE NOT NULL";
-const String integerType = "INTEGER NOT NULL";
-
 class Transaction {
-  final int? id;
+  final String? id;
   String title;
   double amount;
   DateTime date;
@@ -37,9 +31,11 @@ class Transaction {
 
   static Transaction fromJson(Map<String, dynamic> json) {
     return Transaction(
-      id: json[idField] as int?,
+      id: json[idField],
       title: json[titleField],
-      amount: json[amountField],
+      amount: json[amountField] is int 
+          ? (json[amountField] as int).toDouble() 
+          : json[amountField],
       date: DateTime.parse(json[dateField]),
       type: TransactionType.values.firstWhere(
         (e) => e.toString() == 'TransactionType.${json[typeField]}',
@@ -58,7 +54,7 @@ class Transaction {
   }
 
   Transaction copyWith({
-    int? id,
+    String? id,
     String? title,
     double? amount,
     DateTime? date,

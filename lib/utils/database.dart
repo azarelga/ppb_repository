@@ -1,77 +1,77 @@
-import 'package:sqflite/sqflite.dart';
-import 'package:path/path.dart';
-import 'package:ppb_repository/model/transaction.model.dart' as app_model;
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:ppb_repository/model/transaction.model.dart' as model; 
+import 'package:ppb_repository/model/transaction.model.dart'; 
 
-const String fileName = 'ppb_database.db';
+class FirebaseService {
+  FirebaseService._init();
+  static final FirebaseService instance = FirebaseService._init();
+  
+  final CollectionReference _transactionsCollection = 
+      FirebaseFirestore.instance.collection('transactions');
 
-class AppDatabase {
-  AppDatabase._init();
-
-  static final AppDatabase instance = AppDatabase._init();
-
-  static Database? _database;
-
-  Future<Database> get database async {
-    if (_database != null) return _database!;
-    _database = await _initDB(fileName);
-    return _database!;
+  // Insert a new transaction
+  Future<void> insertTransaction(model.Transaction transaction) async {
+    await _transactionsCollection.add({
+      titleField: transaction.title,
+      amountField: transaction.amount,
+      dateField: transaction.date.toIso8601String(),
+      typeField: transaction.type.toString().split('.').last,
+    });
   }
 
-  Future<Database> _initDB(String fileName) async {
-    final dbPath = await getDatabasesPath();
-    final path = join(dbPath, fileName);
-
-    return await openDatabase(path, version: 2, onCreate: _createDB);
+  // Update existing transaction
+  Future<void> updateTransaction(model.Transaction transaction) async {
+    if (transaction.id == null) return;
+    
+    await _transactionsCollection.doc(transaction.id).update({
+      titleField: transaction.title,
+      amountField: transaction.amount,
+      dateField: transaction.date.toIso8601String(),
+      typeField: transaction.type.toString().split('.').last,
+    });
   }
 
-  Future _createDB(Database db, int version) async {
-    await db.execute('''
-      CREATE TABLE ${app_model.tableName}(
-        ${app_model.idField} ${app_model.idType},
-        ${app_model.titleField} ${app_model.textType},
-        ${app_model.amountField} ${app_model.doubleType},
-        ${app_model.dateField} ${app_model.textType},
-        ${app_model.typeField} ${app_model.textType}
-      )
-    ''');
+  // Delete transaction
+  Future<void> deleteTransaction(String id) async {
+    await _transactionsCollection.doc(id).delete();
   }
 
-  Future<void> insertTransaction(app_model.Transaction transaction) async {
-    final db = await instance.database;
-    await db.insert(
-      app_model.tableName,
-      transaction.toMap(),
-      conflictAlgorithm: ConflictAlgorithm.replace,
-    );
+  // Get all transactions
+  Stream<List<model.Transaction>> getAllTransactionsStream() {
+    return _transactionsCollection.snapshots().map((snapshot) {
+      return snapshot.docs.map((doc) {
+        final data = doc.data() as Map<String, dynamic>;
+        return model.Transaction(
+          id: doc.id,
+          title: data[titleField],
+          amount: data[amountField] is int 
+              ? (data[amountField] as int).toDouble() 
+              : data[amountField],
+          date: DateTime.parse(data[dateField]),
+          type: TransactionType.values.firstWhere(
+            (e) => e.toString() == 'TransactionType.${data[typeField]}',
+          ),
+        );
+      }).toList();
+    });
   }
 
-  Future<void> updateTransaction(app_model.Transaction transaction) async {
-    final db = await instance.database;
-    await db.update(
-      app_model.tableName,
-      transaction.toMap(),
-      where: '${app_model.idField} = ?',
-      whereArgs: [transaction.id],
-    );
-  }
-
-  Future<void> deleteTransaction(int id) async {
-    final db = await instance.database;
-    await db.delete(
-      app_model.tableName,
-      where: '${app_model.idField} = ?',
-      whereArgs: [id],
-    );
-  }
-
-  Future<List<app_model.Transaction>> getAllTransactions() async {
-    final db = await instance.database;
-    final result = await db.query(app_model.tableName);
-    return result.map((json) => app_model.Transaction.fromJson(json)).toList();
-  }
-
-  Future close() async {
-    final db = await database;
-    db.close();
+  // Get a list of transactions (one-time fetch)
+  Future<List<model.Transaction>> getAllTransactions() async {
+    final snapshot = await _transactionsCollection.get();
+    return snapshot.docs.map((doc) {
+      final data = doc.data() as Map<String, dynamic>;
+      return model.Transaction(
+        id: doc.id,
+        title: data[titleField],
+        amount: data[amountField] is int 
+            ? (data[amountField] as int).toDouble() 
+            : data[amountField],
+        date: DateTime.parse(data[dateField]),
+        type: TransactionType.values.firstWhere(
+          (e) => e.toString() == 'TransactionType.${data[typeField]}',
+        ),
+      );
+    }).toList();
   }
 }

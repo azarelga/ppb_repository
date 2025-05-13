@@ -1,10 +1,20 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:ppb_repository/firebase_options.dart';
 import 'package:ppb_repository/screen/homepage.dart';
-import 'package:ppb_repository/utils/database.dart';
+import 'package:ppb_repository/utils/notification_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await AppDatabase.instance.database; // ensures DB is ready
+  
+  // Initialize Firebase
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+  
+  // Initialize notifications
+  await NotificationService().initialize();
+  
   runApp(MyApp());
 }
 

@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:ppb_repository/model/transaction.model.dart';
-import 'package:ppb_repository/widgets/transaction_form.dart';
-import 'package:ppb_repository/widgets/transaction_item.dart';
-import 'package:ppb_repository/utils/database.dart';
-import 'package:ppb_repository/utils/notification_service.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:expense_tracker/model/transaction.model.dart';
+import 'package:expense_tracker/widgets/transaction_form.dart';
+import 'package:expense_tracker/widgets/transaction_item.dart';
+import 'package:expense_tracker/utils/database.dart';
+import 'package:expense_tracker/utils/notification_service.dart';
 
 class HomePage extends StatefulWidget {
+  const HomePage({super.key});
+
   @override
   _HomePageState createState() => _HomePageState();
 }
@@ -42,7 +45,18 @@ class _HomePageState extends State<HomePage> {
       _isLoading = true;
     });
 
-    final transactions = await _firebaseService.getAllTransactions();
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) {
+      setState(() {
+        _transactions.clear();
+        _isLoading = false;
+      });
+      return;
+    }
+
+    final transactions = await _firebaseService.getAllTransactions(
+      uid: user.uid,
+    );
     setState(() {
       _transactions.clear();
       _transactions.addAll(transactions);
@@ -107,8 +121,11 @@ class _HomePageState extends State<HomePage> {
         date: DateTime.now(),
         type: _selectedType,
       );
-      
-      await _firebaseService.insertTransaction(newTransaction);
+
+      await _firebaseService.insertTransaction(
+        newTransaction,
+        uid: FirebaseAuth.instance.currentUser!.uid,
+      );
       _notificationService.showAddTransactionNotification(newTransaction);
     } else {
       // Update existing transaction
@@ -117,8 +134,11 @@ class _HomePageState extends State<HomePage> {
         amount: enteredAmount,
         type: _selectedType,
       );
-      
-      await _firebaseService.updateTransaction(updatedTx);
+
+      await _firebaseService.updateTransaction(
+        updatedTx,
+        uid: FirebaseAuth.instance.currentUser!.uid,
+      );
       _notificationService.showEditTransactionNotification(updatedTx);
     }
 
@@ -131,7 +151,7 @@ class _HomePageState extends State<HomePage> {
 
   Future<void> _deleteTransaction(String? id, String title) async {
     if (id == null) return;
-    
+
     await _firebaseService.deleteTransaction(id);
     _notificationService.showDeleteTransactionNotification(title);
     _loadTransactions();
@@ -156,10 +176,7 @@ class _HomePageState extends State<HomePage> {
       appBar: AppBar(
         title: Text('Azarel\'s Expense Tracker App'),
         actions: [
-          IconButton(
-            icon: Icon(Icons.refresh),
-            onPressed: _loadTransactions,
-          ),
+          IconButton(icon: Icon(Icons.refresh), onPressed: _loadTransactions),
           IconButton(
             icon: Icon(Icons.notifications),
             onPressed: () {
@@ -168,85 +185,123 @@ class _HomePageState extends State<HomePage> {
           ),
         ],
       ),
-      body: _isLoading
-          ? Center(child: CircularProgressIndicator())
-          : Column(
-              children: [
-                Card(
-                  margin: EdgeInsets.all(20),
-                  elevation: 5,
-                  child: Padding(
-                    padding: EdgeInsets.all(20),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.center,
+      drawer: Drawer(
+        child: ListView(
+          padding: EdgeInsets.zero,
+          children: [
+            UserAccountsDrawerHeader(
+              accountEmail: Text(
+                FirebaseAuth.instance.currentUser?.email ?? 'No email',
+              ),
+              accountName: Text(''),
+            ),
+            ListTile(
+              leading: Icon(Icons.logout),
+              title: Text('Logout'),
+              onTap: () async {
+                await FirebaseAuth.instance.signOut();
+                if (Navigator.of(context).canPop()) {
+                  Navigator.of(context).pop();
+                }
+              },
+            ),
+          ],
+        ),
+      ),
+      body:
+          _isLoading
+              ? Center(child: CircularProgressIndicator())
+              : Column(
+                children: [
+                  Card(
+                    margin: EdgeInsets.all(20),
+                    elevation: 5,
+                    child: Padding(
+                      padding: EdgeInsets.all(20),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Text(
+                            'Jumlah saldo kamu segini:',
+                            style: TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                          SizedBox(height: 8),
+                          Text(
+                            currencyFormat.format(_netWorth),
+                            style: TextStyle(
+                              fontSize: 28,
+                              fontWeight: FontWeight.bold,
+                              color: _netWorth >= 0 ? Colors.green : Colors.red,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+
+                  // Transaction List header
+                  Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                    child: Row(
                       children: [
                         Text(
-                          'Jumlah saldo kamu segini:',
-                          style: TextStyle(fontSize: 20, fontWeight: FontWeight.w500),
-                        ),
-                        SizedBox(height: 8),
-                        Text(
-                          currencyFormat.format(_netWorth),
+                          'List Transaksi',
                           style: TextStyle(
-                            fontSize: 28,
+                            fontSize: 20,
                             fontWeight: FontWeight.bold,
-                            color: _netWorth >= 0 ? Colors.green : Colors.red,
                           ),
-                          textAlign: TextAlign.center,
                         ),
                       ],
                     ),
                   ),
-                ),
 
-                // Transaction List header
-                Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-                  child: Row(
-                    children: [
-                      Text(
-                        'List Transaksi',
-                        style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                      ),
-                    ],
+                  // Transaction List
+                  Expanded(
+                    child:
+                        _transactions.isEmpty
+                            ? Center(
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(
+                                    Icons.account_balance_wallet_outlined,
+                                    size: 60,
+                                    color: Colors.grey,
+                                  ),
+                                  SizedBox(height: 16),
+                                  Text(
+                                    'Diisi yuk transaksinya!',
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      color: Colors.grey,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            )
+                            : ListView.builder(
+                              itemCount: _transactions.length,
+                              itemBuilder: (ctx, index) {
+                                final tx = _transactions[index];
+                                return TransactionItem(
+                                  transaction: tx,
+                                  currencyFormat: currencyFormat,
+                                  onDelete:
+                                      () => _deleteTransaction(tx.id, tx.title),
+                                  onEdit:
+                                      () => _showAddTransactionSheet(
+                                        transaction: tx,
+                                      ),
+                                );
+                              },
+                            ),
                   ),
-                ),
-
-                // Transaction List
-                Expanded(
-                  child: _transactions.isEmpty
-                      ? Center(
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(
-                                Icons.account_balance_wallet_outlined,
-                                size: 60,
-                                color: Colors.grey,
-                              ),
-                              SizedBox(height: 16),
-                              Text(
-                                'Diisi yuk transaksinya!',
-                                style: TextStyle(fontSize: 16, color: Colors.grey),
-                              ),
-                            ],
-                          ),
-                        )
-                      : ListView.builder(
-                          itemCount: _transactions.length,
-                          itemBuilder: (ctx, index) {
-                            final tx = _transactions[index];
-                            return TransactionItem(
-                              transaction: tx,
-                              currencyFormat: currencyFormat,
-                              onDelete: () => _deleteTransaction(tx.id, tx.title),
-                              onEdit: () => _showAddTransactionSheet(transaction: tx),
-                            );
-                          },
-                        ),
-                ),
-              ],
-            ),
+                ],
+              ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => _showAddTransactionSheet(),
         child: Icon(Icons.add),

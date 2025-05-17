@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:ppb_repository/model/transaction.model.dart';
+import 'package:expense_tracker/model/transaction.model.dart';
 import 'package:intl/intl.dart';
 
 class TransactionItem extends StatelessWidget {
@@ -24,17 +24,19 @@ class TransactionItem extends StatelessWidget {
         onTap: () => onEdit(),
         child: ListTile(
           leading: CircleAvatar(
-            backgroundColor: transaction.type == TransactionType.income
-                ? Colors.green[100]
-                : Colors.red[100],
+            backgroundColor:
+                transaction.type == TransactionType.income
+                    ? Colors.green[100]
+                    : Colors.red[100],
             radius: 15,
             child: Icon(
               transaction.type == TransactionType.income
                   ? Icons.arrow_downward
                   : Icons.arrow_upward,
-              color: transaction.type == TransactionType.income
-                  ? Colors.green
-                  : Colors.red,
+              color:
+                  transaction.type == TransactionType.income
+                      ? Colors.green
+                      : Colors.red,
             ),
           ),
           title: Text(
@@ -45,8 +47,9 @@ class TransactionItem extends StatelessWidget {
             softWrap: false,
           ),
           subtitle: Text(
-              DateFormat('dd MMM yyyy').format(transaction.date),
-              style: TextStyle(fontSize: 12.0)),
+            DateFormat('dd MMM yyyy').format(transaction.date),
+            style: TextStyle(fontSize: 12.0),
+          ),
           trailing: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -55,9 +58,10 @@ class TransactionItem extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 18.0,
                   fontWeight: FontWeight.bold,
-                  color: transaction.type == TransactionType.income
-                      ? Colors.green
-                      : Colors.red,
+                  color:
+                      transaction.type == TransactionType.income
+                          ? Colors.green
+                          : Colors.red,
                 ),
               ),
               SizedBox(width: 1),

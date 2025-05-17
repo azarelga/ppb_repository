@@ -54,9 +54,10 @@ class DefaultFirebaseOptions {
 
   static const FirebaseOptions android = FirebaseOptions(
     apiKey: 'AIzaSyDdDMXImPf5LdIpnzZzVWNIHpMXVyRJINE',
-    appId: '1:669492168794:android:57a2c84e517b5dc4f03063',
+    appId: '1:669492168794:android:4650f3ed71649be1f03063',
     messagingSenderId: '669492168794',
     projectId: 'arels-expense-tracker',
     storageBucket: 'arels-expense-tracker.firebasestorage.app',
   );
+
 }

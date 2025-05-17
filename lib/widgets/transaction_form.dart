@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:ppb_repository/model/transaction.model.dart';
+import 'package:expense_tracker/model/transaction.model.dart';
 
 class TransactionForm extends StatelessWidget {
   final TextEditingController titleController;
@@ -88,10 +88,7 @@ class TransactionForm extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
-                TextButton(
-                  onPressed: onCancel,
-                  child: Text('BATAL'),
-                ),
+                TextButton(onPressed: onCancel, child: Text('BATAL')),
                 ElevatedButton(
                   onPressed: onSubmit,
                   child: Text(isEditing ? 'UPDATE' : 'TAMBAH'),
@@ -104,3 +101,4 @@ class TransactionForm extends StatelessWidget {
     );
   }
 }
+

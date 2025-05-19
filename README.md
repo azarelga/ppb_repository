@@ -1,6 +1,6 @@
 # Assignment 3: Firebase + Awesome Notifications
+https://github.com/user-attachments/assets/23125aa7-3bbc-41c9-a98a-cc4440c780ad
 
-https://github.com/user-attachments/assets/61ace24d-86e7-4f72-ba56-680afad364ff
 ## Daftar Isi
 
 1. [Pendahuluan](#pendahuluan)

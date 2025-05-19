@@ -17,7 +17,7 @@ class NotificationService {
   );
 
   Future<void> initialize() async {
-    await AwesomeNotifications().initialize('resource://drawable/ic_launcher', [
+    await AwesomeNotifications().initialize(null, [
       NotificationChannel(
         channelKey: 'transaction_channel',
         channelName: 'Transaction Notifications',
@@ -26,7 +26,7 @@ class NotificationService {
         importance: NotificationImportance.High,
         channelShowBadge: true,
       ),
-    ]);
+    ], debug: true);
 
     // Request notification permissions
     await AwesomeNotifications().isNotificationAllowed().then((isAllowed) {
@@ -107,4 +107,3 @@ class NotificationService {
     );
   }
 }
-

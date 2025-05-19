@@ -27,6 +27,7 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     super.initState();
+    _notificationService.initialize(); // <-- Add this line
     _loadTransactions();
   }
 
